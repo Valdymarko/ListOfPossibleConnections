@@ -14,7 +14,7 @@ let kNewDeviceDiscovered: String = "newDeviceDiscovered"
 final class BTDataModel: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     // MARK: - Properties
     private var btManager: CBCentralManager?
-    private var set = Set<BTDevice>()
+    private var dic = [UUID: BTDevice]()
     public var btDevices = [BTDevice]()
     public var btAvailable: Bool?
     // MARK: - Shared
@@ -26,7 +26,7 @@ final class BTDataModel: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
     }
     // MARK: - Functions
     public func scanForAvailableDevices() {
-        btDevices.removeAll()
+//        btDevices.removeAll()
         btManager?.scanForPeripherals(withServices: nil, options: nil)
     }
     public func stopScan() {
@@ -36,10 +36,10 @@ final class BTDataModel: NSObject, CBCentralManagerDelegate, CBPeripheralDelegat
       return btManager?.isScanning
     }
     // MARK: - CBCentralManager delegate
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
         let btDeivce = BTDevice(name: peripheral.name ?? "N/A", rssi: RSSI, identifier: peripheral.identifier)
-        set.insert(btDeivce)
-        btDevices = Array(set)
+        dic.updateValue(btDeivce, forKey: btDeivce.deviceIdentifier)
+        btDevices = Array(dic.values)
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: kNewDeviceDiscovered), object: nil)
     }
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
